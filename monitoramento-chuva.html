@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GeoSafe — Monitoramento de Chuva</title>
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* ========== ESTILOS IDÊNTICOS AO GEOSAFE.ORG ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-white:   #F4F2EE;
+  --bg-gray:    #E8F2EF;
+  --bg-dark:    #1E2826;
+  --bg-darker:  #1E2826;
+  --text:       #1E2826;
+  --text-muted: #5C5A55;
+  --text-soft:  #5C5A55;
+  --green:      #6FA68F;
+  --green-d:    #43867D;
+  --red-tag:    #C94040;
+  --border:     #D4D0C8;
+  --border-soft:#D4D0C8;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg-white);
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+a { color: inherit; text-decoration: none; }
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* NAVBAR */
+nav {
+  position: sticky;
+  top: 0;
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-soft);
+  z-index: 100;
+  padding: 1.1rem 0;
+  backdrop-filter: blur(10px);
+  background: rgba(244, 242, 238, 0.92);
+}
+.nav-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-brand {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -.01em;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  color: var(--text);
+}
+.nav-brand .logo-mark {
+  width: 22px; height: 22px;
+  background: var(--text);
+  border-radius: 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.nav-brand .logo-mark svg { width: 14px; height: 14px; }
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+}
+.nav-links a {
+  font-size: .88rem;
+  font-weight: 500;
+  color: var(--text);
+  transition: color .2s;
+  position: relative;
+  padding-bottom: 2px;
+}
+.nav-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -3px; left: 0; right: 0;
+  height: 2px;
+  background: var(--text);
+}
+.nav-links a:hover { color: var(--text-soft); }
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 5px;
+}
+.hamburger span {
+  display: block;
+  width: 22px; height: 2px;
+  background: var(--text);
+  transition: .3s;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* TAG */
+.tag {
+  display: inline-block;
+  font-size: .65rem;
+  font-weight: 600;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--red-tag);
+  background: rgba(196,66,58,.08);
+  padding: .4rem .85rem;
+  border-radius: 3px;
+  margin-bottom: 1.5rem;
+}
+.tag.dark {
+  color: var(--text);
+  background: rgba(0,0,0,.06);
+}
+
+.underline {
+  display: block;
+  width: 36px;
+  height: 3px;
+  background: var(--text);
+  margin: 1rem 0 1.5rem;
+}
+
+/* BOTÕES */
+.btn {
+  display: inline-block;
+  padding: .75rem 1.5rem;
+  border-radius: 5px;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--text);
+  transition: all .2s;
+}
+.btn-dark { background: var(--text); color: #fff; }
+.btn-dark:hover { background: #000; }
+.btn-light { background: #fff; color: var(--text); }
+.btn-light:hover { background: #f5f5f5; }
+.btn-green { background: var(--green); color: #fff; border: 1px solid var(--green); }
+.btn-green:hover { background: var(--green-d); border-color: var(--green-d); }
+
+/* FOOTER */
+footer { background: var(--bg-darker); color: #aaa; padding: 3rem 0 1.5rem; margin-top: 3rem; }
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+.footer-brand h4 {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: .5rem;
+}
+.footer-brand p {
+  font-size: .78rem;
+  color: #888;
+  line-height: 1.6;
+  max-width: 240px;
+}
+.footer-col h5 {
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+.footer-col ul { list-style: none; }
+.footer-col ul li { margin-bottom: .5rem; }
+.footer-col ul li a, .footer-col p {
+  font-size: .78rem;
+  color: #888;
+  transition: color .2s;
+}
+.footer-col ul li a:hover { color: #fff; }
+.footer-bottom {
+  border-top: 1px solid #333;
+  padding-top: 1.5rem;
+  font-size: .72rem;
+  color: #666;
+}
+
+/* ========== ESTILOS ESPECÍFICOS DA PÁGINA ========== */
+.page-header {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-d) 100%);
+  padding: 2.5rem 0;
+  text-align: center;
+  color: white;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.page-header p {
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.back-link:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Seção de conteúdo */
+.content-section {
+  padding: 3rem 0;
+}
+
+/* Cards de estatísticas */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.stat-card h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  margin-bottom: 0.75rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.stat-unit {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+
+/* Cards de conteúdo */
+.content-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.content-card h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Tabela */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.data-table th {
+  background: var(--bg-gray);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-table tr:hover {
+  background: rgba(0,0,0,0.02);
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.status-critical { background: #C94040; color: white; }
+.status-warning { background: #F5C842; color: #1E2826; }
+.status-normal { background: #6FA68F; color: white; }
+.status-monitor { background: #E8834A; color: white; }
+
+/* Gráfico */
+.chart-wrapper {
+  max-height: 300px;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+}
+
+@media (max-width: 540px) {
+  .container { padding: 0 1.25rem; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; }
+}
+
+/* Mobile Menu */
+.mobile-menu {
+  display: none;
+  position: fixed;
+  inset: 60px 0 0 0;
+  background: #ffffff;
+  z-index: 99;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 3rem;
+  gap: 1.5rem;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a { font-size: 1.2rem; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+    <div class="container nav-wrap">
+    <a href="#" class="nav-brand">
+    <span class="logo-mark">
+      <img src="img/geosafe.png" alt="GeoSafe" 
+          style="width: 150px; height: 150px; object-fit: contain;">
+    </span>
+    <ul class="nav-links">
+      <li><a href="geosafe.html#hero">Início</a></li>
+      <li><a href="geosafe.html#problema">Sobre</a></li>
+      <li><a href="geosafe.html#solucao">Funcionalidades</a></li>
+      <li><a href="geosafe.html#cta">Contato</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="geosafe.html#hero" onclick="closeMobile()">Início</a>
+  <a href="geosafe.html#problema" onclick="closeMobile()">Sobre</a>
+  <a href="geosafe.html#solucao" onclick="closeMobile()">Funcionalidades</a>
+  <a href="geosafe.html#cta" onclick="closeMobile()">Contato</a>
+</div>
+
+<!-- HEADER DA PÁGINA -->
+<div class="page-header">
+  <div class="container">
+    <a href="geosafe.html#solucao" class="back-link">← Voltar para Funcionalidades</a>
+    <h1>🌧️ Monitoramento de Chuva</h1>
+    <p>Monitoramento em tempo real de precipitação e riscos associados a deslizamentos</p>
+  </div>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<section class="content-section">
+  <div class="container">
+
+    <!-- Cards de estatísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Precipitação Atual</h3>
+        <div class="stat-value" id="currentRain">--</div>
+        <div class="stat-unit">mm/h</div>
+      </div>
+      <div class="stat-card">
+        <h3>Acumulado 24h</h3>
+        <div class="stat-value" id="accumulatedRain">--</div>
+        <div class="stat-unit">mm</div>
+      </div>
+      <div class="stat-card">
+        <h3>Probabilidade de Chuva</h3>
+        <div class="stat-value" id="rainProb">--</div>
+        <div class="stat-unit">%</div>
+      </div>
+      <div class="stat-card">
+        <h3>Nível de Alerta</h3>
+        <div class="stat-value" id="alertLevel">--</div>
+        <div class="stat-unit" id="alertDesc">--</div>
+      </div>
+    </div>
+
+    <!-- Gráfico de previsão -->
+    <div class="content-card">
+      <h2>📈 Previsão de Precipitação - Próximas 24h</h2>
+      <div class="chart-wrapper">
+        <canvas id="rainChart" width="800" height="300" style="max-width:100%; height:auto;"></canvas>
+      </div>
+    </div>
+
+    <!-- Tabela de estações monitoradas -->
+    <div class="content-card">
+      <h2>📍 Estações Meteorológicas Monitoradas</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>Estação</th><th>Localidade</th><th>Coordenadas</th><th>Chuva (mm/h)</th><th>Status</th></tr>
+          </thead>
+          <tbody id="stationsTable">
+            <tr><td colspan="5" style="text-align:center;">Carregando dados...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Informações adicionais -->
+    <div class="content-card">
+      <h2>ℹ️ Sobre o Monitoramento</h2>
+      <p style="color: var(--text-soft); line-height: 1.7;">
+        O sistema coleta dados em tempo real de estações meteorológicas distribuídas na região Sul do Brasil. 
+        Os limiares de alerta são baseados em dados históricos do CEMADEN e estudos de suscetibilidade a deslizamentos.
+        Quando a precipitação ultrapassa 15mm/h, o sistema emite alerta de atenção; acima de 25mm/h, alerta crítico.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h4>GeoSafe</h4>
+        <p>Sistema de Monitoramento Inteligente de Riscos de Deslizamento de Terra</p>
+      </div>
+      <div class="footer-col">
+        <h5>Projeto</h5>
+        <ul>
+          <li><a href="geosafe.html#hero">Início</a></li>
+          <li><a href="geosafe.html#problema">Sobre o GeoSafe</a></li>
+          <li><a href="geosafe.html#solucao">Funcionalidades</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Instituição</h5>
+        <p>E.E.E.P.Professor Sebastião Vasconcelos Sobrinho</p>
+        <p>2° Desenvolvimento de Sistemas</p>
+      </div>
+      <div class="footer-col">
+        <h5>Contato</h5>
+        <p> [ geosafe.2026@gmail.com ] </p>
+        <p>(46) 9xxxx-xxxx</p>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 GeoSafe — Todos os direitos reservados.</div>
+  </div>
+</footer>
+
+<script>
+// ========== JAVASCRIPT DO MONITORAMENTO DE CHUVA ==========
+
+// Estações monitoradas
+const stations = [
+  { id: "FB01", name: "Francisco Beltrão", lat: -26.080, lon: -53.055, city: "Francisco Beltrão" },
+  { id: "CH01", name: "Chapecó", lat: -27.096, lon: -52.618, city: "Chapecó" },
+  { id: "CA01", name: "Caçador", lat: -26.775, lon: -51.015, city: "Caçador" },
+  { id: "CT01", name: "Curitibanos", lat: -27.282, lon: -50.585, city: "Curitibanos" },
+  { id: "PF01", name: "Passo Fundo", lat: -28.263, lon: -52.407, city: "Passo Fundo" },
+  { id: "LG01", name: "Lages", lat: -27.816, lon: -50.326, city: "Lages" },
+  { id: "JV01", name: "Joinville", lat: -26.304, lon: -48.846, city: "Joinville" },
+  { id: "BL01", name: "Blumenau", lat: -26.919, lon: -49.066, city: "Blumenau" }
+];
+
+let rainChart = null;
+let updateInterval = null;
+
+// Gerar dados simulados realistas (substituir por API real em produção)
+function generateSimulatedRain() {
+  return Math.random() * 35;
+}
+
+// Determinar status baseado na chuva
+function getStatus(rain) {
+  if (rain > 25) return { text: "CRÍTICO", class: "status-critical", desc: "Risco iminente!" };
+  if (rain > 15) return { text: "ATENÇÃO", class: "status-warning", desc: "Monitore constantemente" };
+  if (rain > 8) return { text: "MONITORAR", class: "status-monitor", desc: "Alerta preventivo" };
+  return { text: "NORMAL", class: "status-normal", desc: "Dentro do esperado" };
+}
+
+// Atualizar cards principais
+function updateMainCards() {
+  // Média das estações
+  const avgRain = stations.reduce((sum, station) => {
+    return sum + (station.currentRain || generateSimulatedRain());
+  }, 0) / stations.length;
+  
+  const status = getStatus(avgRain);
+  
+  document.getElementById('currentRain').innerHTML = `<span style="color:${status.class === 'status-critical' ? '#C94040' : status.class === 'status-warning' ? '#F5C842' : '#6FA68F'}">${avgRain.toFixed(1)}</span>`;
+  document.getElementById('accumulatedRain').textContent = `${(avgRain * 12).toFixed(1)}`;
+  document.getElementById('rainProb').textContent = `${Math.min(100, Math.floor(avgRain * 3 + 20))}`;
+  document.getElementById('alertLevel').innerHTML = `<span class="status-badge ${status.class}">${status.text}</span>`;
+  document.getElementById('alertDesc').textContent = status.desc;
+  
+  return avgRain;
+}
+
+// Atualizar tabela de estações
+function updateStationsTable() {
+  const tbody = document.getElementById('stationsTable');
+  
+  const rows = stations.map(station => {
+    const rain = generateSimulatedRain();
+    station.currentRain = rain;
+    const status = getStatus(rain);
+    
+    return `
+      <tr>
+        <td style="padding: 12px;"><strong>${station.id}</strong></td>
+        <td style="padding: 12px;">${station.name}</td>
+        <td style="padding: 12px;">${station.lat.toFixed(3)}°, ${station.lon.toFixed(3)}°</td>
+        <td style="padding: 12px; font-weight: 600; color:${status.class === 'status-critical' ? '#C94040' : status.class === 'status-warning' ? '#E8834A' : '#6FA68F'}">${rain.toFixed(1)} mm</td>
+        <td style="padding: 12px;"><span class="status-badge ${status.class}">${status.text}</span></td>
+      </tr>
+    `;
+  }).join('');
+  
+  tbody.innerHTML = rows;
+}
+
+// Gerar previsão para 24h
+function generateForecast() {
+  const forecast = [];
+  const baseRain = parseFloat(document.getElementById('currentRain').innerHTML?.replace(/[^0-9.-]/g, '') || '10');
+  
+  for (let i = 0; i < 24; i++) {
+    let variation = Math.sin(i * Math.PI / 12) * 0.5; // Padrão diário
+    let rain = Math.max(0, baseRain * (0.7 + variation + Math.random() * 0.3));
+    forecast.push(rain);
+  }
+  return forecast;
+}
+
+// Atualizar gráfico
+function updateChart() {
+  const ctx = document.getElementById('rainChart').getContext('2d');
+  const forecast = generateForecast();
+  const hours = Array.from({length: 24}, (_, i) => `${i}:00`);
+  
+  if (rainChart) {
+    rainChart.destroy();
+  }
+  
+  rainChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: hours,
+      datasets: [{
+        label: 'Precipitação (mm/h)',
+        data: forecast,
+        borderColor: '#43867D',
+        backgroundColor: 'rgba(46, 126, 234, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: forecast.map(v => v > 25 ? '#C94040' : v > 15 ? '#E8834A' : '#43867D'),
+        pointRadius: 3,
+        pointHoverRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: { 
+          callbacks: { 
+            label: (ctx) => `${ctx.raw.toFixed(1)} mm/h` 
+          }
+        }
+      },
+      scales: {
+        y: { 
+          title: { display: true, text: 'Precipitação (mm/h)', color: '#666' },
+          beginAtZero: true,
+          grid: { color: '#D4D0C8' }
+        },
+        x: { 
+          title: { display: true, text: 'Horário', color: '#666' },
+          ticks: { maxTicksLimit: 12 }
+        }
+      }
+    }
+  });
+}
+
+// Salvar dados para outras páginas
+function saveToLocalStorage(avgRain, status) {
+  const rainData = {
+    current: avgRain,
+    risk: status.text,
+    timestamp: new Date().toISOString(),
+    stations: stations.map(s => ({ name: s.name, rain: s.currentRain }))
+  };
+  localStorage.setItem('geosafe_rain_data', JSON.stringify(rainData));
+  
+  // Disparar evento para outras páginas
+  window.dispatchEvent(new CustomEvent('geosafe-rain-update', { detail: rainData }));
+}
+
+// Atualizar dashboard completo
+function updateDashboard() {
+  updateStationsTable();
+  const avgRain = updateMainCards();
+  const status = getStatus(avgRain);
+  updateChart();
+  saveToLocalStorage(avgRain, status);
+}
+
+// Menu mobile
+function closeMobile() {
+  document.getElementById('hamburger')?.classList.remove('open');
+  document.getElementById('mobileMenu')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', () => {
+  updateDashboard();
+  
+  // Atualizar a cada 15 segundos
+  if (updateInterval) clearInterval(updateInterval);
+  updateInterval = setInterval(updateDashboard, 15000);
+  
+  // Menu mobile
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  
+  if (hamburger) {
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open');
+      document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+    });
+  }
+});
+</script>
+</body>
+</html>

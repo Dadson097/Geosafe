@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GeoSafe — Análise de Relevo</title>
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* ========== ESTILOS IDÊNTICOS AO GEOSAFE.HTML ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-white:   #F4F2EE;
+  --bg-gray:    #E8F2EF;
+  --bg-dark:    #1E2826;
+  --bg-darker:  #1E2826;
+  --text:       #1E2826;
+  --text-muted: #5C5A55;
+  --text-soft:  #5C5A55;
+  --green:      #6FA68F;
+  --green-d:    #43867D;
+  --red-tag:    #C94040;
+  --border:     #D4D0C8;
+  --border-soft:#D4D0C8;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg-white);
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* NAVBAR */
+nav {
+  position: sticky;
+  top: 0;
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-soft);
+  z-index: 100;
+  padding: 1.1rem 0;
+  backdrop-filter: blur(10px);
+  background: rgba(244, 242, 238, 0.92);
+}
+.nav-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-brand {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -.01em;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  color: var(--text);
+}
+.nav-brand .logo-mark {
+  width: 22px; height: 22px;
+  background: var(--text);
+  border-radius: 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.nav-brand .logo-mark svg { width: 14px; height: 14px; }
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+}
+.nav-links a {
+  font-size: .88rem;
+  font-weight: 500;
+  color: var(--text);
+  transition: color .2s;
+  position: relative;
+  padding-bottom: 2px;
+}
+.nav-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -3px; left: 0; right: 0;
+  height: 2px;
+  background: var(--text);
+}
+.nav-links a:hover { color: var(--text-soft); }
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 5px;
+}
+.hamburger span {
+  display: block;
+  width: 22px; height: 2px;
+  background: var(--text);
+  transition: .3s;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* TAG */
+.tag {
+  display: inline-block;
+  font-size: .65rem;
+  font-weight: 600;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--red-tag);
+  background: rgba(196,66,58,.08);
+  padding: .4rem .85rem;
+  border-radius: 3px;
+  margin-bottom: 1.5rem;
+}
+.tag.dark {
+  color: var(--text);
+  background: rgba(0,0,0,.06);
+}
+
+.underline {
+  display: block;
+  width: 36px;
+  height: 3px;
+  background: var(--text);
+  margin: 1rem 0 1.5rem;
+}
+
+/* BOTÕES */
+.btn {
+  display: inline-block;
+  padding: .75rem 1.5rem;
+  border-radius: 5px;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--text);
+  transition: all .2s;
+}
+.btn-dark { background: var(--text); color: #fff; }
+.btn-dark:hover { background: #000; }
+.btn-light { background: #fff; color: var(--text); }
+.btn-light:hover { background: #f5f5f5; }
+.btn-green { background: var(--green); color: #fff; border: 1px solid var(--green); }
+.btn-green:hover { background: var(--green-d); border-color: var(--green-d); }
+
+/* PAGE HEADER */
+.page-header {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-d) 100%);
+  padding: 2.5rem 0;
+  text-align: center;
+  color: white;
+}
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.page-header p {
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+.back-link:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* CONTEÚDO */
+.content-section {
+  padding: 3rem 0;
+}
+
+/* Grid 2 colunas */
+.grid-2cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Cards de informação */
+.info-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+.info-card h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  margin-bottom: 0.5rem;
+}
+.info-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.info-unit {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+
+/* Suscetibilidade */
+.susceptibility {
+  display: inline-block;
+  padding: 0.3rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+.susceptibility-high { background: #C94040; color: white; }
+.susceptibility-moderate { background: #F5C842; color: #1E2826; }
+.susceptibility-low { background: #6FA68F; color: white; }
+
+/* Cards de conteúdo */
+.full-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.full-card h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Canvas mapa 3D */
+.terrain-canvas {
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(135deg, #43867D 0%, #1E2826 100%);
+  border-radius: 8px;
+}
+
+/* Tabela */
+.table-wrapper {
+  overflow-x: auto;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+}
+.data-table th {
+  background: var(--bg-gray);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.data-table tr:hover {
+  background: rgba(0,0,0,0.02);
+}
+
+/* FOOTER */
+footer { background: var(--bg-darker); color: #aaa; padding: 3rem 0 1.5rem; margin-top: 3rem; }
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+.footer-brand h4 {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: .5rem;
+}
+.footer-brand p {
+  font-size: .78rem;
+  color: #888;
+  line-height: 1.6;
+  max-width: 240px;
+}
+.footer-col h5 {
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+.footer-col ul { list-style: none; }
+.footer-col ul li { margin-bottom: .5rem; }
+.footer-col ul li a, .footer-col p {
+  font-size: .78rem;
+  color: #888;
+  transition: color .2s;
+}
+.footer-col ul li a:hover { color: #fff; }
+.footer-bottom {
+  border-top: 1px solid #333;
+  padding-top: 1.5rem;
+  font-size: .72rem;
+  color: #666;
+}
+
+/* REVEAL ANIMATION */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .7s ease, transform .7s ease;
+}
+.reveal.visible { opacity: 1; transform: none; }
+.r-1 { transition-delay: .08s; }
+.r-2 { transition-delay: .16s; }
+.r-3 { transition-delay: .24s; }
+
+/* MOBILE MENU */
+.mobile-menu {
+  display: none;
+  position: fixed;
+  inset: 60px 0 0 0;
+  background: #ffffff;
+  z-index: 99;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 3rem;
+  gap: 1.5rem;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a { font-size: 1.2rem; font-weight: 600; }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .grid-2cols { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .container { padding: 0 1.25rem; }
+}
+
+@media (max-width: 540px) {
+  .footer-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* Estilos para o mapa de declividade */
+.slope-canvas {
+  width: 100%;
+  height: 300px;
+  background: #E8F2EF;
+  border-radius: 8px;
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR (IDÊNTICO AO GEOSAFE.HTML) -->
+<nav>
+    <div class="container nav-wrap">
+    <a href="#" class="nav-brand">
+    <span class="logo-mark">
+      <img src="img/geosafe.png" alt="GeoSafe" 
+          style="width: 150px; height: 150px; object-fit: contain;">
+    </span>
+    <ul class="nav-links">
+      <li><a href="geosafe.html#hero">Início</a></li>
+      <li><a href="geosafe.html#problema">Sobre</a></li>
+      <li><a href="geosafe.html#solucao">Funcionalidades</a></li>
+      <li><a href="geosafe.html#cta">Contato</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="geosafe.html#hero" onclick="closeMobile()">Início</a>
+  <a href="geosafe.html#problema" onclick="closeMobile()">Sobre</a>
+  <a href="geosafe.html#solucao" onclick="closeMobile()">Funcionalidades</a>
+  <a href="geosafe.html#cta" onclick="closeMobile()">Contato</a>
+</div>
+
+<!-- HEADER DA PÁGINA -->
+<div class="page-header">
+  <div class="container">
+    <a href="geosafe.html#solucao" class="back-link">← Voltar para Funcionalidades</a>
+    <h1>⛰️ Análise de Relevo</h1>
+    <p>Análise topográfica e identificação de áreas suscetíveis a deslizamentos</p>
+  </div>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<section class="content-section">
+  <div class="container">
+
+    <!-- Primeira linha: Declividade e Orientação -->
+    <div class="grid-2cols">
+      <div class="info-card reveal">
+        <h3>📐 Declividade do Terreno</h3>
+        <div class="info-value" id="slopeValue">--</div>
+        <div class="info-unit">graus (°)</div>
+        <div id="slopeBadge" class="susceptibility"></div>
+        <p style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-soft);" id="slopeDesc"></p>
+      </div>
+
+      <div class="info-card reveal r-1">
+        <h3>🧭 Orientação da Encosta</h3>
+        <div class="info-value" id="aspectValue">--</div>
+        <div class="info-unit">graus (°)</div>
+        <p style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-soft);" id="aspectDesc"></p>
+      </div>
+    </div>
+
+    <!-- Segunda linha: Perfil Topográfico e Mapa de Declividade -->
+    <div class="grid-2cols">
+      <div class="full-card reveal r-2">
+        <h2>📊 Perfil Topográfico</h2>
+        <canvas id="profileChart" width="500" height="250" style="width:100%; height:auto;"></canvas>
+      </div>
+
+      <div class="full-card reveal r-3">
+        <h2>🗺️ Mapa de Declividade</h2>
+        <canvas id="slopeMap" width="500" height="250" style="width:100%; height:auto; background:#f0f0f0; border-radius:8px;"></canvas>
+      </div>
+    </div>
+
+    <!-- Tabela de análise por localidade -->
+    <div class="full-card reveal">
+      <h2>📍 Análise por Localidade</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>Município</th><th>Declividade Média</th><th>Altitude</th><th>Suscetibilidade</th><th>Prioridade</th></tr>
+          </thead>
+          <tbody id="locationsTable">
+            <tr><td colspan="5" style="text-align:center;">Carregando dados...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Informações adicionais -->
+    <div class="full-card reveal">
+      <h2>ℹ️ Sobre a Análise de Relevo</h2>
+      <p style="color: var(--text-soft); line-height: 1.7;">
+        A análise de relevo utiliza Modelos Digitais de Elevação (MDE) para calcular declividade, orientação e curvatura do terreno. 
+        Áreas com declividade superior a 30° são consideradas de <strong>alta suscetibilidade</strong> a deslizamentos, 
+        especialmente quando combinadas com chuvas intensas e solo saturado.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER (IDÊNTICO AO GEOSAFE.HTML) -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h4>GeoSafe</h4>
+        <p>Sistema de Monitoramento Inteligente de Riscos de Deslizamento de Terra</p>
+      </div>
+      <div class="footer-col">
+        <h5>Projeto</h5>
+        <ul>
+          <li><a href="geosafe.html#hero">Início</a></li>
+          <li><a href="geosafe.html#problema">Sobre o GeoSafe</a></li>
+          <li><a href="geosafe.html#solucao">Funcionalidades</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Instituição</h5>
+        <p>E.E.E.P.Professor Sebastião Vasconcelos Sobrinho</p>
+        <p>2° Desenvolvimento de Sistemas</p>
+      </div>
+      <div class="footer-col">
+        <h5>Contato</h5>
+        <p>[ geosafe.2026@gmail.com ]</p>
+        <p>(46) 9xxxx-xxxx</p>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 GeoSafe — Todos os direitos reservados.</div>
+  </div>
+</footer>
+
+<script>
+// ========== JAVASCRIPT DA ANÁLISE DE RELEVO ==========
+
+// Localidades monitoradas
+const locations = [
+  { name: "Francisco Beltrão", lat: -26.080, lon: -53.055, elevation: 650 },
+  { name: "Chapecó", lat: -27.096, lon: -52.618, elevation: 670 },
+  { name: "Caçador", lat: -26.775, lon: -51.015, elevation: 960 },
+  { name: "Curitibanos", lat: -27.282, lon: -50.585, elevation: 1040 },
+  { name: "Passo Fundo", lat: -28.263, lon: -52.407, elevation: 690 },
+  { name: "Lages", lat: -27.816, lon: -50.326, elevation: 920 },
+  { name: "Vacaria", lat: -28.512, lon: -50.934, elevation: 970 },
+  { name: "Caxias do Sul", lat: -29.168, lon: -51.179, elevation: 780 }
+];
+
+let profileChart = null;
+let updateInterval = null;
+
+// Função para classificar suscetibilidade baseada na declividade
+function classifySusceptibility(slope) {
+  if (slope > 30) {
+    return { 
+      text: "MUITO ALTA", 
+      class: "susceptibility-high", 
+      desc: "Risco MUITO ALTO de deslizamento",
+      priority: "CRÍTICA",
+      color: "#C94040"
+    };
+  }
+  if (slope > 20) {
+    return { 
+      text: "ALTA", 
+      class: "susceptibility-high", 
+      desc: "Risco ALTO - Requer monitoramento constante",
+      priority: "ALTA",
+      color: "#E8834A"
+    };
+  }
+  if (slope > 12) {
+    return { 
+      text: "MODERADA", 
+      class: "susceptibility-moderate", 
+      desc: "Risco MODERADO - Monitore em chuvas intensas",
+      priority: "MÉDIA",
+      color: "#F5C842"
+    };
+  }
+  return { 
+    text: "BAIXA", 
+    class: "susceptibility-low", 
+    desc: "Risco BAIXO - Terreno estável",
+    priority: "BAIXA",
+    color: "#6FA68F"
+  };
+}
+
+// Gerar declividade simulada baseada na elevação
+function calculateSlope(elevation) {
+  // Quanto maior a altitude, geralmente maior a declividade
+  let baseSlope = (elevation - 500) / 30;
+  baseSlope = Math.min(45, Math.max(5, baseSlope));
+  // Adicionar variação aleatória
+  return parseFloat((baseSlope + (Math.random() * 8 - 4)).toFixed(1));
+}
+
+// Gerar orientação aleatória da encosta
+function generateAspect() {
+  const directions = ['Norte', 'Nordeste', 'Leste', 'Sudeste', 'Sul', 'Sudoeste', 'Oeste', 'Noroeste'];
+  const angle = Math.floor(Math.random() * 360);
+  const direction = directions[Math.floor(angle / 45)];
+  return { angle, direction };
+}
+
+// Gerar perfil topográfico (curva de elevação)
+function generateTopographicProfile() {
+  const points = [];
+  for (let i = 0; i < 30; i++) {
+    let elevation = 500 + Math.sin(i * 0.3) * 150 + Math.cos(i * 0.15) * 80;
+    elevation += Math.random() * 30;
+    points.push(elevation);
+  }
+  return points;
+}
+
+// Atualizar cards principais
+function updateMainCards() {
+  // Usar primeira localidade como referência
+  const sampleLocation = locations[0];
+  const slope = calculateSlope(sampleLocation.elevation);
+  const susceptibility = classifySusceptibility(slope);
+  const aspect = generateAspect();
+  
+  // Atualizar declividade
+  document.getElementById('slopeValue').innerHTML = `<span style="color:${susceptibility.color}">${slope}°</span>`;
+  document.getElementById('slopeBadge').className = `susceptibility ${susceptibility.class}`;
+  document.getElementById('slopeBadge').textContent = susceptibility.text;
+  document.getElementById('slopeDesc').textContent = susceptibility.desc;
+  
+  // Atualizar orientação
+  document.getElementById('aspectValue').textContent = `${aspect.angle}°`;
+  document.getElementById('aspectDesc').innerHTML = `Encosta voltada para <strong>${aspect.direction}</strong>. ${aspect.direction === 'Sul' ? 'Menor insolação, solo mais úmido.' : aspect.direction === 'Norte' ? 'Maior insolação, solo mais seco.' : 'Exposição intermediária.'}`;
+  
+  return { slope, susceptibility };
+}
+
+// Atualizar gráfico de perfil
+function updateProfileChart() {
+  const ctx = document.getElementById('profileChart').getContext('2d');
+  const profile = generateTopographicProfile();
+  const distances = Array.from({length: profile.length}, (_, i) => `${i * 50}m`);
+  
+  if (profileChart) {
+    profileChart.destroy();
+  }
+  
+  profileChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: distances,
+      datasets: [{
+        label: 'Elevação (m)',
+        data: profile,
+        borderColor: '#667eea',
+        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 2,
+        pointHoverRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.raw.toFixed(0)} m` } }
+      },
+      scales: {
+        y: { title: { display: true, text: 'Elevação (m)' }, beginAtZero: false },
+        x: { title: { display: true, text: 'Distância' }, ticks: { maxTicksLimit: 8 } }
+      }
+    }
+  });
+}
+
+// Desenhar mapa de declividade (visualização colorida)
+function drawSlopeMap() {
+  const canvas = document.getElementById('slopeMap');
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  const width = canvas.width = canvas.clientWidth;
+  const height = canvas.height = canvas.clientHeight;
+  
+  // Criar grid de declividade simulada
+  for (let x = 0; x < width; x++) {
+    for (let y = 0; y < height; y++) {
+      // Simular terreno com ruído Perlin simplificado
+      const slopeValue = (Math.sin(x * 0.02) * Math.cos(y * 0.02) + 1) / 2;
+      let color;
+      if (slopeValue > 0.7) color = '#C94040';  // Alta declividade
+      else if (slopeValue > 0.45) color = '#E8834A'; // Média-alta
+      else if (slopeValue > 0.25) color = '#F5C842'; // Média
+      else color = '#6FA68F'; // Baixa declividade
+      
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  
+  // Adicionar legenda
+  ctx.fillStyle = '#333';
+  ctx.font = '10px Inter';
+  ctx.shadowBlur = 0;
+  ctx.fillText('▲ Alta Declividade', 10, 20);
+  ctx.fillText('▼ Baixa Declividade', 10, 35);
+}
+
+// Atualizar tabela de localidades
+function updateLocationsTable() {
+  const tbody = document.getElementById('locationsTable');
+  
+  const rows = locations.map(loc => {
+    const slope = calculateSlope(loc.elevation);
+    const susceptibility = classifySusceptibility(slope);
+    
+    return `
+      <tr>
+        <td style="padding: 10px;"><strong>${loc.name}</strong></td>
+        <td style="padding: 10px;">${slope}°</td>
+        <td style="padding: 10px;">${loc.elevation} m</td>
+        <td style="padding: 10px;"><span class="susceptibility ${susceptibility.class}" style="padding: 4px 12px;">${susceptibility.text}</span></td>
+        <td style="padding: 10px;"><span style="background:${susceptibility.color}; color:white; padding:4px 12px; border-radius:20px; font-size:0.7rem;">${susceptibility.priority}</span></td>
+      </tr>
+    `;
+  }).join('');
+  
+  tbody.innerHTML = rows;
+}
+
+// Salvar dados no localStorage para compartilhar com outras páginas
+function saveToLocalStorage(slope, susceptibility) {
+  const slopeData = {
+    slope: slope,
+    terrain: susceptibility.text,
+    priority: susceptibility.priority,
+    timestamp: new Date().toISOString()
+  };
+  localStorage.setItem('geosafe_slope_data', JSON.stringify(slopeData));
+  
+  // Disparar evento para outras páginas
+  window.dispatchEvent(new CustomEvent('geosafe-slope-update', { detail: slopeData }));
+}
+
+// Atualizar dashboard completo
+function updateDashboard() {
+  const { slope, susceptibility } = updateMainCards();
+  updateProfileChart();
+  drawSlopeMap();
+  updateLocationsTable();
+  saveToLocalStorage(slope, susceptibility);
+}
+
+// Observer para animações reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+// Fechar menu mobile
+function closeMobile() {
+  document.getElementById('hamburger')?.classList.remove('open');
+  document.getElementById('mobileMenu')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', () => {
+  updateDashboard();
+  
+  // Atualizar a cada 30 segundos
+  if (updateInterval) clearInterval(updateInterval);
+  updateInterval = setInterval(updateDashboard, 30000);
+  
+  // Inicializar animações reveal
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  
+  // Menu mobile
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  
+  if (hamburger) {
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open');
+      document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+    });
+  }
+  
+  // Ajustar mapa quando redimensionar
+  window.addEventListener('resize', () => {
+    drawSlopeMap();
+  });
+});
+</script>
+</body>
+</html>

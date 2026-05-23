@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoSafe — Sistema de Monitoramento Inteligente</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- ============================================================
+       ESTILOS GLOBAIS
+       Variáveis CSS, reset, tipografia e utilitários base.
+       Para alterar paleta de cores, edite as variáveis em :root.
+  ============================================================ -->
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── Variáveis de design ── */
+    :root {
+      --bg-white: #F4F2EE;
+      --bg-gray: #E8F2EF;
+      --bg-dark: #1E2826;
+      --bg-darker: #1E2826;
+      --text: #1E2826;
+      --text-muted: #5C5A55;
+      --text-soft: #5C5A55;
+      --green: #6FA68F;
+      --green-d: #43867D;
+      --red-tag: #C94040;
+      --border: #D4D0C8;
+      --border-soft: #D4D0C8;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg-white);
+      line-height: 1.6;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ── Container principal ── */
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* ============================================================
+       NAVBAR
+       Menu fixo no topo com suporte a hamburger para mobile.
+       Links ativos são controlados via JS ao fazer scroll.
+    ============================================================ */
+    nav {
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid var(--border-soft);
+      z-index: 100;
+      padding: 1.1rem 0;
+      backdrop-filter: blur(10px);
+      background: rgba(244, 242, 238, 0.92);
+    }
+
+    .nav-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -.01em;
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      color: var(--text);
+    }
+
+    /* Logo: container do ícone da marca na navbar */
+    .nav-brand .logo-mark {
+      width: 22px;
+      height: 22px;
+      background: var(--text);
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-brand .logo-mark svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      font-size: .88rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: color .2s;
+      position: relative;
+      padding-bottom: 2px;
+    }
+
+    /* Indicador de link ativo na navbar */
+    .nav-links a.active::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--text);
+    }
+
+    .nav-links a:hover {
+      color: var(--text-soft);
+    }
+
+    /* Botão hamburger — visível apenas em mobile */
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text);
+      transition: .3s;
+    }
+
+    /* Animação do hamburger aberto (X) */
+    .hamburger.open span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .hamburger.open span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.open span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    /* ============================================================
+       UTILITÁRIOS — TAG, UNDERLINE
+       Usados como labels decorativos acima dos títulos de seção.
+    ============================================================ */
+    .tag {
+      display: inline-block;
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--red-tag);
+      background: rgba(201, 64, 64, 0.1);
+      padding: .4rem .85rem;
+      border-radius: 3px;
+      margin-bottom: 1.5rem;
+    }
+
+    .tag.dark {
+      color: var(--text);
+      background: #42867B;
+    }
+
+    .underline {
+      display: block;
+      width: 36px;
+      height: 3px;
+      background: var(--text);
+      margin: 1rem 0 1.5rem;
+    }
+
+    /* ============================================================
+       SEÇÃO HERO (#hero)
+       Apresentação principal com texto e mapa ilustrativo.
+       Grade: texto à esquerda, mapa SVG à direita.
+    ============================================================ */
+    #hero {
+      background: var(--bg-white);
+      padding: 4.5rem 0 5rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .hero-text h1 {
+      font-size: clamp(2rem, 3.5vw, 2.6rem);
+      font-weight: 600;
+      letter-spacing: -.02em;
+      color: var(--text);
+      margin-bottom: 1.4rem;
+    }
+
+    .hero-text > p {
+      color: var(--text-soft);
+      font-size: .92rem;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+      max-width: 460px;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+
+    /* ── Botões reutilizáveis ── */
+    .btn {
+      display: inline-block;
+      padding: .75rem 1.5rem;
+      border-radius: 5px;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--text);
+      transition: all .2s;
+    }
+
+    .btn-dark {
+      background: var(--text);
+      color: #ffffff;
+    }
+
+    .btn-dark:hover {
+      background: #1E2826;
+    }
+
+    .btn-light {
+      background: #F4F2EE;
+      color: var(--text);
+    }
+
+    .btn-light:hover {
+      background: #E8F2EF;
+    }
+
+    /* Container do mapa SVG no hero */
+    .hero-map {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .hero-map::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 60% 40%, rgba(67, 134, 125, 0.25), transparent 60%),
+        radial-gradient(circle at 40% 60%, rgba(111, 166, 143, 0.5), transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-map svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ============================================================
+       CARDS DE FUNCIONALIDADES (seção #solucao)
+       Cards clicáveis que redirecionam para páginas de detalhe.
+       Para adicionar um novo card: copie um bloco .feature-card
+       e atualize data-page e data-title.
+    ============================================================ */
+    .feature-card {
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+    }
+
+    .feature-card .card-link {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: var(--green);
+      font-weight: 600;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .feature-card:hover .card-link {
+      opacity: 1;
+    }
+
+    .feature-card:active {
+      transform: translateY(-4px);
+    }
+
+    /* Overlay de hover nos cards de funcionalidade */
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, rgba(111, 166, 143, 0.12), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      border-radius: 8px;
+    }
+
+    .feature-card:hover::after {
+      opacity: 1;
+    }
+
+    /* ============================================================
+       BARRA DE ESTATÍSTICAS (.stats-bar)
+       Faixa verde com 4 números de impacto.
+       Para alterar os valores, edite os <span class="num"> no HTML.
+    ============================================================ */
+    .stats-bar {
+      background: var(--bg-white);
+      padding: 2rem 0;
+    }
+
+    .stats-wrapper {
+      background: var(--green);
+      border-radius: 8px;
+      padding: 2rem 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .stat {
+      padding: 0 1.5rem;
+      border-right: 1px solid rgba(255, 255, 255, .25);
+    }
+
+    .stat:last-child {
+      border-right: none;
+    }
+
+    .stat .num {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1E2826;
+      letter-spacing: -.02em;
+      line-height: 1;
+      margin-bottom: .55rem;
+      display: block;
+    }
+
+    .stat .desc {
+      color: rgba(30, 40, 38, 0.9);
+      font-size: .78rem;
+      line-height: 1.45;
+    }
+
+    /* ============================================================
+       SEÇÃO PROBLEMA (#problema)
+       Texto descritivo à esquerda, imagem à direita.
+       A imagem é carregada via <img> em .problema-img.
+    ============================================================ */
+    #problema {
+      background: var(--bg-white);
+      padding: 5rem 0 0;
+    }
+
+    .problema-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+      padding-bottom: 3rem;
+    }
+
+    /* Container da imagem da seção problema */
+    .problema-img {
+      width: 100%;
+      height: 350px;
+      background: #E8F2EF;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .problema-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ============================================================
+       SEÇÃO SOLUÇÃO (#solucao)
+       Grade de 3 cards: chuva, relevo e instabilidade.
+       O card de alerta tem borda vermelha (classe .alert).
+    ============================================================ */
+    #solucao {
+      background: #F4F2EE;
+      padding: 5rem 0 5.5rem;
+    }
+
+    .solucao-head {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 3rem;
+      align-items: start;
+      margin-bottom: 3.5rem;
+    }
+
+    .solucao-head h2 {
+      font-size: clamp(1.7rem, 2.7vw, 2.05rem);
+      font-weight: 700;
+      letter-spacing: -.015em;
+      line-height: 1.25;
+    }
+
+    .solucao-head .underline {
+      margin: 1rem 0 1.5rem;
+    }
+
+    .solucao-head p.intro {
+      color: var(--text-soft);
+      font-size: .85rem;
+      line-height: 1.75;
+      max-width: 540px;
+    }
+
+    /* Caixa de citação ao lado do texto da solução */
+    .quote-box {
+      background: var(--green);
+      color: #1E2826;
+      padding: 1.5rem 1.8rem;
+      border-radius: 4px;
+      font-size: .82rem;
+      font-style: italic;
+      line-height: 1.7;
+      margin-top: 4.5rem;
+    }
+
+    /* Grade dos cards de funcionalidade */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    /* Card base */
+    .card {
+      background: #F4F2EE;
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: box-shadow .2s, transform .2s;
+    }
+
+    .card:hover {
+      box-shadow: 0 6px 20px rgba(0, 0, 0, .08);
+      transform: translateY(-2px);
+    }
+
+    /* Área de imagem/ilustração no topo do card */
+    .card-img {
+      height: 110px;
+      background: #E8F2EF;
+      border-bottom: 1px solid var(--border-soft);
+      overflow: hidden;
+    }
+
+    .card-img svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .card-body {
+      padding: 1.2rem 1.4rem 1.6rem;
+    }
+
+    .card-body h3 {
+      font-size: .98rem;
+      font-weight: 700;
+      margin-bottom: .65rem;
+      color: var(--text);
+    }
+
+    .card-body p {
+      font-size: .8rem;
+      color: var(--text-soft);
+      line-height: 1.7;
+    }
+
+    /* Variante de card com borda de alerta (vermelho) */
+    .card.alert {
+      border: 1px solid #C94040;
+    }
+
+    .card.alert:hover {
+      box-shadow: 0 4px 16px rgba(201, 64, 64, 0.14);
+    }
+
+    /* ============================================================
+       SEÇÃO ODS / AGENDA 2030 (#ods)
+       Três cards coloridos referenciando os ODS da ONU.
+       Cores de fundo: ods-11 = laranja suave, ods-13 = verde suave, ods-3 = verde.
+    ============================================================ */
+    #ods {
+      background: var(--bg-gray);
+      padding: 5rem 0;
+    }
+
+    #ods .head h2 {
+      font-size: clamp(1.7rem, 2.7vw, 2.05rem);
+      font-weight: 700;
+      letter-spacing: -.015em;
+      line-height: 1.25;
+    }
+
+    #ods .head .underline {
+      margin: 1rem 0 1.5rem;
+    }
+
+    #ods .head p {
+      color: var(--text-soft);
+      font-size: .85rem;
+      line-height: 1.75;
+      max-width: 720px;
+    }
+
+    .ods-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .ods-card {
+      border-radius: 5px;
+      padding: 1.6rem 1.6rem 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-height: 240px;
+    }
+
+    /* Cores de fundo por objetivo */
+    .ods-card.ods-11 { background: #FEF0DC; }
+    .ods-card.ods-13 { background: #E8F2EF; }
+    .ods-card.ods-3  { background: #D4EAE3; }
+
+    .ods-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #ffffff;
+      padding: 6px;
+    }
+
+    /* Cores de ícone por objetivo */
+    .ods-card.ods-11 .ods-icon { background: #E8834A; }
+    .ods-card.ods-13 .ods-icon { background: #43867D; }
+    .ods-card.ods-3  .ods-icon { background: #43867D; }
+
+    .ods-icon-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    .ods-icon-content .ods-num-label {
+      font-size: .42rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      line-height: 1;
+    }
+
+    .ods-icon-content .ods-num {
+      font-size: 1.2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .ods-icon-content svg {
+      width: 26px;
+      height: 26px;
+      align-self: flex-end;
+    }
+
+    .ods-card h3 {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: .25rem;
+    }
+
+    .ods-card p {
+      font-size: .79rem;
+      color: var(--text);
+      line-height: 1.65;
+      opacity: .82;
+    }
+
+    /* ============================================================
+       SEÇÃO CTA (#cta)
+       Chamada para ação com botão de acesso ao sistema.
+       O botão "Acessar" abre o modal de login via openLoginModal().
+    ============================================================ */
+    #cta {
+      background: #E8F2EF;
+      padding: 5rem 0;
+      text-align: center;
+    }
+
+    #cta h2 {
+      font-size: clamp(1.6rem, 2.6vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -.015em;
+      line-height: 1.3;
+      margin-bottom: 1.2rem;
+      color: var(--text);
+    }
+
+    #cta h2 em {
+      font-style: normal;
+      color: var(--green-d);
+    }
+
+    #cta p {
+      color: var(--text-soft);
+      font-size: .87rem;
+      line-height: 1.7;
+      max-width: 560px;
+      margin: 0 auto 2rem;
+    }
+
+    .cta-btns {
+      display: flex;
+      justify-content: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #ffffff;
+      border: 1px solid var(--green);
+    }
+
+    .btn-green:hover {
+      background: var(--green-d);
+      border-color: var(--green-d);
+    }
+
+    /* ============================================================
+       MODAL DE LOGIN
+       Overlay com formulário de acesso ao sistema.
+       Credenciais demo: demo@geosafe.com / geosafe2026
+       Para alterar as credenciais, edite DEMO_CREDENTIALS no JS.
+    ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-login {
+      background: var(--bg-white);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 420px;
+      padding: 2rem 1.8rem;
+      position: relative;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+      transform: translateY(30px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-login {
+      transform: translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1.2rem;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: var(--text-soft);
+      transition: color 0.2s;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: var(--text);
+    }
+
+    .modal-login h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .modal-login .modal-sub {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      margin-bottom: 2rem;
+      border-left: 3px solid var(--green);
+      padding-left: 0.75rem;
+    }
+
+    .input-group {
+      margin-bottom: 1.3rem;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: #F4F2EE;
+      transition: all 0.2s;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(111, 166, 143, 0.12);
+    }
+
+    .btn-login {
+      width: 100%;
+      background: var(--green);
+      border: none;
+      color: #ffffff;
+      font-weight: 700;
+      padding: 0.9rem;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .btn-login:hover {
+      background: var(--green-d);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(111, 166, 143, 0.3);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    .modal-footer {
+      font-size: 0.75rem;
+      text-align: center;
+      color: var(--text-soft);
+      border-top: 1px solid var(--border-soft);
+      padding-top: 1.2rem;
+      margin-top: 0.5rem;
+    }
+
+    .modal-footer a {
+      color: var(--green);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .modal-footer a:hover {
+      color: var(--green-d);
+      text-decoration: underline;
+    }
+
+    /* Mensagem de erro no formulário de login */
+    .error-message {
+      background: rgba(242, 18, 6, 0.08);
+      color: var(--red-tag);
+      font-size: 0.75rem;
+      padding: 0.6rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      text-align: center;
+      display: none;
+      border-left: 3px solid var(--red-tag);
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    /* ============================================================
+       FOOTER
+       Grade de 4 colunas: marca, projeto, instituição, contato.
+       Fundo escuro (--bg-darker).
+    ============================================================ */
+    footer {
+      background: var(--bg-darker);
+      color: #aaa;
+      padding: 3rem 0 1.5rem;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 2.5rem;
+      padding-bottom: 2.5rem;
+    }
+
+    .footer-brand h4 {
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+    }
+
+    .footer-brand p {
+      font-size: .78rem;
+      color: #888;
+      line-height: 1.6;
+      max-width: 240px;
+    }
+
+    .footer-col h5 {
+      font-size: .68rem;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 1rem;
+    }
+
+    .footer-col ul {
+      list-style: none;
+    }
+
+    .footer-col ul li {
+      margin-bottom: .5rem;
+    }
+
+    .footer-col ul li a,
+    .footer-col p {
+      font-size: .78rem;
+      color: #888;
+      transition: color .2s;
+    }
+
+    .footer-col p {
+      line-height: 1.7;
+      margin-bottom: .35rem;
+    }
+
+    .footer-col ul li a:hover {
+      color: #ffffff;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #333;
+      padding-top: 1.5rem;
+      font-size: .72rem;
+      color: #666;
+    }
+
+    /* ============================================================
+       ANIMAÇÕES DE REVEAL (scroll)
+       Elementos com classe .reveal surgem ao entrar na viewport.
+       Delays: .r-1 a .r-4 criam efeito escalonado.
+    ============================================================ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .r-1 { transition-delay: .08s; }
+    .r-2 { transition-delay: .16s; }
+    .r-3 { transition-delay: .24s; }
+    .r-4 { transition-delay: .32s; }
+
+    /* ============================================================
+       MENU MOBILE
+       Sobreposição de tela cheia ativada pelo hamburger.
+    ============================================================ */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      inset: 60px 0 0 0;
+      background: #F4F2EE;
+      z-index: 99;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 3rem;
+      gap: 1.5rem;
+    }
+
+    .mobile-menu.open {
+      display: flex;
+    }
+
+    .mobile-menu a {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    /* ============================================================
+       RESPONSIVIDADE
+       Breakpoint principal: 900px (tablet/mobile).
+       Breakpoint secundário: 540px (mobile pequeno).
+    ============================================================ */
+    @media (max-width: 900px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .hero-grid,
+      .problema-grid,
+      .solucao-head {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+
+      .cards-grid,
+      .ods-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+
+      .stat {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, .25);
+        padding-bottom: 1.2rem;
+      }
+
+      .stat:nth-child(odd) {
+        border-right: 1px solid rgba(255, 255, 255, .25);
+      }
+
+      .stat:last-child,
+      .stat:nth-last-child(2):nth-child(odd) {
+        border-bottom: none;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .quote-box {
+        margin-top: 1rem;
+      }
+
+      /* Imagem da seção problema em tela menor */
+      .problema-img {
+        width: 100%;
+        height: 260px;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .container {
+        padding: 0 1.25rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stat {
+        border-right: none !important;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       NAVBAR
+       Links: Início (#hero), Sobre (#problema),
+              Funcionalidades (#solucao), Contato (#cta).
+       O link ativo é marcado com a classe .active via scroll JS.
+  ============================================================ -->
+  <nav>
+    <div class="container nav-wrap">
+      <a href="#" class="nav-brand">
+        <!-- Logo: imagem dentro do container .logo-mark -->
+        <span class="logo-mark">
+          <img src="img/geosafe.png" alt="GeoSafe"
+            style="width: 150px; height: 150px; object-fit: contain;">
+        </span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#hero" class="active">Início</a></li>
+        <li><a href="#problema">Sobre</a></li>
+        <li><a href="#solucao">Funcionalidades</a></li>
+        <li><a href="#cta">Contato</a></li>
+      </ul>
+
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Menu mobile (visível ao clicar no hamburger) -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#hero"     onclick="closeMobile()">Início</a>
+    <a href="#problema" onclick="closeMobile()">Sobre</a>
+    <a href="#solucao"  onclick="closeMobile()">Funcionalidades</a>
+    <a href="#cta"      onclick="closeMobile()">Contato</a>
+  </div>
+
+
+  <!-- ============================================================
+       SEÇÃO HERO (#hero)
+       Título principal, subtítulo e botões de ação.
+       SVG do mapa: ilustração de precipitação sobre relevo do Sul/SC.
+       Para trocar o mapa, substitua o bloco <svg> dentro de .hero-map.
+  ============================================================ -->
+  <section id="hero">
+    <div class="container">
+      <div class="hero-grid">
+
+        <!-- Texto do hero -->
+        <div class="hero-text">
+          <span class="tag reveal">Sistema de Monitoramento</span>
+          <h1 class="reveal r-1">Monitoramento Inteligente de Riscos de Deslizamento</h1>
+          <p class="reveal r-2">O GeoSafe integra dados ambientais, análise de relevo e índices de chuva para
+            identificar áreas em risco e emitir alertas antecipados — protegendo comunidades vulneráveis antes que o
+            desastre aconteça.</p>
+          <div class="hero-btns reveal r-3">
+            <a href="#problema" class="btn btn-dark">Saiba Mais</a>
+            <a href="#solucao"  class="btn btn-light">Ver Funcionalidades</a>
+          </div>
+        </div>
+
+        <!-- Mapa SVG ilustrativo (heatmap de precipitação) -->
+        <!-- CORREÇÃO: xmlns corrigido para o namespace oficial do SVG -->
+        <div class="hero-map reveal r-2">
+          <svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg"
+            preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="terrain" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%"   stop-color="#c8c4b8" />
+                <stop offset="100%" stop-color="#a8a499" />
+              </linearGradient>
+              <radialGradient id="rain1" cx="35%" cy="40%" r="35%">
+                <stop offset="0%"   stop-color="#1a4ce0" stop-opacity=".95" />
+                <stop offset="40%"  stop-color="#2e7eea" stop-opacity=".75" />
+                <stop offset="80%"  stop-color="#6FA68F" stop-opacity=".5"  />
+                <stop offset="100%" stop-color="#7fc8f8" stop-opacity="0"   />
+              </radialGradient>
+              <radialGradient id="rain2" cx="55%" cy="55%" r="25%">
+                <stop offset="0%"   stop-color="#0a2fb0" stop-opacity=".9" />
+                <stop offset="50%"  stop-color="#1a4ce0" stop-opacity=".6" />
+                <stop offset="100%" stop-color="#6FA68F" stop-opacity="0"  />
+              </radialGradient>
+              <radialGradient id="rain3" cx="20%" cy="65%" r="22%">
+                <stop offset="0%"   stop-color="#2e7eea" stop-opacity=".7" />
+                <stop offset="100%" stop-color="#6FA68F" stop-opacity="0"  />
+              </radialGradient>
+              <linearGradient id="scaleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%"   stop-color="#0a2fb0" />
+                <stop offset="40%"  stop-color="#1a4ce0" />
+                <stop offset="80%"  stop-color="#6FA68F" />
+                <stop offset="100%" stop-color="#fcb000" />
+              </linearGradient>
+            </defs>
+
+            <rect width="600" height="400" fill="url(#terrain)" />
+
+            <!-- Contorno da costa (direita) -->
+            <path
+              d="M 540,0 Q 530,40 545,75 Q 555,115 540,150 Q 525,190 535,225 Q 548,265 530,300 Q 510,335 525,370 Q 535,395 540,400 L 600,400 L 600,0 Z"
+              fill="#5a5a5a" opacity=".18" />
+
+            <!-- Sombreamento de relevo montanhoso -->
+            <g opacity=".25">
+              <path d="M 50,80 Q 90,60 130,85 Q 170,110 210,95 L 210,120 Q 170,135 130,110 Q 90,85 50,105 Z"   fill="#8a857a" />
+              <path d="M 250,140 Q 300,120 350,150 Q 400,180 450,160 L 450,185 Q 400,205 350,175 Q 300,145 250,165 Z" fill="#8a857a" />
+              <path d="M 80,220 Q 130,200 180,230 Q 230,260 280,240 L 280,265 Q 230,285 180,255 Q 130,225 80,245 Z"  fill="#8a857a" />
+              <path d="M 320,280 Q 370,260 420,290 Q 470,320 520,300 L 520,325 Q 470,345 420,315 Q 370,285 320,305 Z" fill="#8a857a" />
+              <path d="M 100,330 Q 150,310 200,340 Q 250,370 300,350 L 300,375 Q 250,395 200,365 Q 150,335 100,355 Z" fill="#8a857a" />
+            </g>
+
+            <!-- Camadas de heatmap de chuva -->
+            <rect width="600" height="400" fill="url(#rain1)" />
+            <rect width="600" height="400" fill="url(#rain2)" />
+            <rect width="600" height="400" fill="url(#rain3)" />
+
+            <!-- Cidades e temperaturas -->
+            <g font-family="Inter, sans-serif" font-size="9" fill="#1E2826" font-weight="500">
+              <circle cx="120" cy="80"  r="2" fill="#1E2826" /><text x="126" y="78">Francisco Beltrão</text><text x="126" y="88" font-size="7" fill="#444">19°</text>
+              <circle cx="370" cy="55"  r="2" fill="#1E2826" /><text x="376" y="53">Cruz Machado</text>   <text x="376" y="63" font-size="7" fill="#444">20°</text>
+              <circle cx="170" cy="135" r="2" fill="#1E2826" /><text x="176" y="133">Chapecó</text>        <text x="176" y="143" font-size="7" fill="#444">22°</text>
+              <circle cx="305" cy="115" r="2" fill="#1E2826" /><text x="311" y="113">Caçador</text>        <text x="311" y="123" font-size="7" fill="#444">23°</text>
+              <circle cx="440" cy="105" r="2" fill="#1E2826" /><text x="446" y="103">Curitibanos</text>    <text x="446" y="113" font-size="7" fill="#444">21°</text>
+              <circle cx="280" cy="175" r="2" fill="#1E2826" /><text x="286" y="173">Ipira</text>          <text x="286" y="183" font-size="7" fill="#444">21°</text>
+              <circle cx="510" cy="145" r="2" fill="#1E2826" /><text x="496" y="143" text-anchor="end">Joinville</text> <text x="496" y="153" font-size="7" fill="#444" text-anchor="end">25°</text>
+              <circle cx="430" cy="160" r="2" fill="#1E2826" /><text x="436" y="158">Blumenau</text>
+              <circle cx="125" cy="210" r="2" fill="#1E2826" /><text x="131" y="208">Passo Fundo</text>   <text x="131" y="218" font-size="7" fill="#444">21°</text>
+              <circle cx="380" cy="225" r="2" fill="#1E2826" /><text x="386" y="223">Lages</text>          <text x="386" y="233" font-size="7" fill="#444">19°</text>
+              <circle cx="525" cy="235" r="2" fill="#1E2826" /><text x="510" y="233" text-anchor="end">Itajaí</text>
+              <circle cx="305" cy="285" r="2" fill="#1E2826" /><text x="311" y="283">Vacaria</text>        <text x="311" y="293" font-size="7" fill="#444">19°</text>
+              <circle cx="510" cy="305" r="2" fill="#1E2826" /><text x="495" y="303" text-anchor="end">Criciúma</text> <text x="495" y="313" text-anchor="end" font-size="7" fill="#444">23°</text>
+              <circle cx="195" cy="340" r="2" fill="#1E2826" /><text x="201" y="338">Caxias do Sul</text>  <text x="201" y="348" font-size="7" fill="#444">20°</text>
+            </g>
+
+            <!-- Escala de cores de precipitação -->
+            <g transform="translate(20, 380)">
+              <rect x="0" y="0" width="120" height="6" fill="url(#scaleGrad)" />
+            </g>
+          </svg>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       SEÇÃO PROBLEMA (#problema)
+       Contextualiza o problema dos deslizamentos no Brasil.
+       Imagem: substituir src em .problema-img img para atualizar foto.
+  ============================================================ -->
+  <section id="problema">
+    <div class="container">
+      <div class="problema-grid">
+
+        <!-- Texto descritivo do problema -->
+        <div class="problema-text">
+          <span class="tag dark reveal">O Problema</span>
+          <h2 class="reveal r-1">Deslizamentos de terra matam centenas de brasileiros por ano</h2>
+          <span class="underline reveal r-1"></span>
+          <p class="reveal r-2">O Brasil figura entre os países mais afetados por deslizamentos de terra no mundo.
+            Eventos extremos de chuva, combinados com a ocupação irregular de encostas e a falta de sistemas de
+            monitoramento, resultam anualmente em centenas de mortes e dezenas de milhares de desabrigados —
+            especialmente nas comunidades de menor renda.</p>
+          <p class="reveal r-3">A ausência de alertas antecipados integrados impede que autoridades e moradores tomem
+            decisões a tempo. Cada hora de atraso na emissão de um alerta pode representar vidas perdidas que poderiam
+            ter sido salvas com informação adequada.</p>
+          <p class="reveal r-4">Comunidades localizadas em encostas de alta declividade, com solo saturado e histórico
+            de eventos climáticos extremos, são as mais vulneráveis — e também as menos atendidas por sistemas de
+            monitoramento tradicionais.</p>
+        </div>
+
+        <!-- Imagem ilustrativa da seção problema -->
+        <!-- CORREÇÃO: removidos elementos SVG órfãos que estavam soltos fora de qualquer <svg> -->
+        <div class="problema-img">
+          <img src="img/WhatsApp Image 2026-05-11 at 21.20.28.jpeg"
+            alt="Imagem aérea de área afetada por deslizamento de terra">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Barra de estatísticas de impacto -->
+    <div class="stats-bar">
+      <div class="container">
+        <div class="stats-wrapper">
+          <div class="stats-grid">
+            <div class="stat reveal">
+              <span class="num">+600</span>
+              <span class="desc">mortes por deslizamentos por ano no Brasil (média estimada)</span>
+            </div>
+            <div class="stat reveal r-1">
+              <span class="num">85%</span>
+              <span class="desc">dos eventos ocorrem em regiões sem sistema de alerta ativo</span>
+            </div>
+            <div class="stat reveal r-2">
+              <span class="num">3h</span>
+              <span class="desc">é o tempo médio necessário para evacuação segura com alerta antecipado</span>
+            </div>
+            <div class="stat reveal r-3">
+              <span class="num">ODS 11</span>
+              <span class="desc">prioridade internacional para cidades seguras e resilientes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       SEÇÃO SOLUÇÃO (#solucao)
+       Três cards clicáveis de funcionalidades.
+       Para adicionar card: copie um bloco .feature-card e ajuste
+       data-page (URL destino) e data-title (nome da funcionalidade).
+  ============================================================ -->
+  <section id="solucao">
+    <div class="container">
+      <div class="solucao-head">
+
+        <!-- Cabeçalho e texto introdutório -->
+        <div>
+          <span class="tag dark reveal">A Solução</span>
+          <h2 class="reveal r-1">Como o GeoSafe identifica o risco</h2>
+          <span class="underline reveal r-1"></span>
+          <p class="intro reveal r-2">O GeoSafe combina múltiplas fontes de dados em tempo real para classificar e
+            mapear automaticamente áreas com risco iminente de deslizamento. A solução integra sensores ambientais,
+            modelos digitais de elevação e indicadores geológicos para gerar alertas precisos e acionáveis para gestores
+            e comunidades.</p>
+        </div>
+
+        <!-- Citação lateral -->
+        <div class="quote-box reveal r-2">
+          "A prevenção de desastres naturais exige monitoramento contínuo, cruzamento de dados e comunicação rápida. O
+          GeoSafe foi desenhado para fazer exatamente isso — de forma integrada, acessível e escalável."
+        </div>
+
+      </div>
+
+      <!-- Grade de cards de funcionalidade -->
+      <div class="cards-grid">
+
+        <!-- Card 1: Monitoramento de Chuva -->
+        <div class="card reveal feature-card"
+          data-page="monitoramento-chuva.html"
+          data-title="Monitoramento de Chuva">
+          <div class="card-img">
+            <svg viewBox="0 0 400 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <radialGradient id="storm1" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%"   stop-color="#7A1A1A" />
+                  <stop offset="20%"  stop-color="#C94040" />
+                  <stop offset="45%"  stop-color="#E8834A" />
+                  <stop offset="70%"  stop-color="#43867D" />
+                  <stop offset="100%" stop-color="#6FA68F" stop-opacity="0" />
+                </radialGradient>
+              </defs>
+              <rect width="400" height="110" fill="#dde4ea" />
+              <path d="M 50,30 Q 80,25 110,35 L 130,40 Q 150,45 170,38 L 200,42 Q 230,45 260,40 Q 290,35 320,42 L 340,55 Q 350,70 345,85 L 320,95 Q 280,90 240,92 Q 200,95 160,90 Q 120,85 90,80 Q 60,72 45,55 Q 38,42 50,30 Z"
+                fill="#a8b8a0" opacity=".6" />
+              <ellipse cx="180" cy="55" rx="80" ry="35" fill="url(#storm1)" />
+              <ellipse cx="240" cy="65" rx="50" ry="22" fill="url(#storm1)" opacity=".7" />
+              <ellipse cx="120" cy="48" rx="35" ry="18" fill="url(#storm1)" opacity=".6" />
+              <path d="M 175,55 Q 195,40 215,55 Q 220,70 200,75 Q 185,72 180,60"
+                stroke="#fff" stroke-width="1.5" fill="none" opacity=".5" />
+            </svg>
+          </div>
+          <div class="card-body">
+            <h3>🌧️ Monitoramento de Chuva</h3>
+            <p>Coleta contínua de índices pluviométricos com integração a estações meteorológicas e dados do CEMADEN. O
+              sistema cruza precipitação acumulada com limiares críticos históricos para cada área monitorada, emitindo
+              alertas progressivos conforme o risco aumenta.</p>
+            <div class="card-link">🔍 Clique para detalhes →</div>
+          </div>
+        </div>
+
+        <!-- Card 2: Análise de Relevo -->
+        <div class="card reveal r-1 feature-card"
+          data-page="analise-relevo.html"
+          data-title="Análise de Relevo">
+          <div class="card-img">
+            <svg viewBox="0 0 400 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <linearGradient id="elev" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%"   stop-color="#fff5d6" />
+                  <stop offset="35%"  stop-color="#f5c66a" />
+                  <stop offset="70%"  stop-color="#d97e2e" />
+                  <stop offset="100%" stop-color="#8b3a1e" />
+                </linearGradient>
+              </defs>
+              <rect width="400" height="110" fill="url(#elev)" />
+              <g fill="none" stroke="#5a2818" stroke-width=".8" opacity=".7">
+                <path d="M 0,40 Q 80,30 160,45 Q 240,60 320,45 Q 380,35 400,40" />
+                <path d="M 0,50 Q 80,40 160,55 Q 240,70 320,55 Q 380,45 400,50" />
+                <path d="M 0,60 Q 80,50 160,65 Q 240,80 320,65 Q 380,55 400,60" />
+                <path d="M 0,70 Q 80,60 160,75 Q 240,90 320,75 Q 380,65 400,70" />
+                <path d="M 0,80 Q 80,70 160,85 Q 240,100 320,85 Q 380,75 400,80" />
+                <path d="M 0,90 Q 80,80 160,95 Q 240,108 320,95 Q 380,85 400,90" />
+                <ellipse cx="180" cy="50" rx="40" ry="12" />
+                <ellipse cx="180" cy="50" rx="30" ry="9" />
+                <ellipse cx="180" cy="50" rx="20" ry="6" />
+                <ellipse cx="280" cy="65" rx="35" ry="10" />
+                <ellipse cx="280" cy="65" rx="25" ry="7" />
+                <ellipse cx="80"  cy="60" rx="25" ry="8" />
+                <ellipse cx="80"  cy="60" rx="15" ry="5" />
+              </g>
+            </svg>
+          </div>
+          <div class="card-body">
+            <h3>⛰️ Análise de Relevo</h3>
+            <p>Processamento automatizado de Modelos Digitais de Elevação (MDEs) para calcular declividade, curvatura e
+              exposição das encostas. Identifica automaticamente as zonas de maior suscetibilidade topográfica em cada
+              região monitorada.</p>
+            <div class="card-link">🔍 Clique para detalhes →</div>
+          </div>
+        </div>
+
+        <!-- Card 3: Indicadores de Instabilidade (borda de alerta vermelha) -->
+        <div class="card alert reveal r-2 feature-card"
+          data-page="indicadores-instabilidade.html"
+          data-title="Indicadores de Instabilidade">
+          <div class="card-img">
+            <svg viewBox="0 0 400 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+              <rect width="400" height="110" fill="#fff" />
+              <g stroke="#f0d4d2" stroke-width=".5">
+                <line x1="0" y1="30" x2="400" y2="30" />
+                <line x1="0" y1="55" x2="400" y2="55" />
+                <line x1="0" y1="80" x2="400" y2="80" />
+              </g>
+              <path
+                d="M 0,55 L 20,55 L 25,52 L 30,58 L 40,55 L 55,55 L 60,48 L 65,62 L 70,45 L 75,65 L 80,50 L 85,60 L 95,55 L 110,55 L 115,40 L 120,70 L 125,30 L 130,80 L 135,35 L 140,75 L 145,45 L 150,65 L 160,55 L 175,55 L 180,52 L 185,58 L 195,55 L 210,55 L 215,48 L 220,62 L 230,55 L 250,55 L 255,42 L 260,68 L 265,38 L 270,72 L 275,48 L 280,62 L 290,55 L 310,55 L 315,50 L 320,60 L 330,55 L 350,55 L 355,52 L 360,58 L 370,55 L 400,55"
+                stroke="#c4423a" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+              <rect x="115" y="20" width="40" height="70" fill="#c4423a" opacity=".06" />
+              <rect x="245" y="25" width="35" height="60" fill="#c4423a" opacity=".05" />
+            </svg>
+          </div>
+          <div class="card-body">
+            <h3>⚠️ Indicadores de Instabilidade</h3>
+            <p>Monitoramento de sinais geológicos de deformação e saturação do solo. Um índice combinado calcula o grau
+              de instabilidade de cada área em tempo real, permitindo classificações de risco em níveis — de atenção até
+              alerta crítico.</p>
+            <div class="card-link">🔍 Clique para detalhes →</div>
+          </div>
+        </div>
+
+      </div><!-- /cards-grid -->
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       SEÇÃO ODS / AGENDA 2030 (#ods)
+       Três cards referenciando ODS 11, ODS 13 e ODS 3.
+       Para alterar texto ou ícone de um ODS, edite o .ods-card correspondente.
+  ============================================================ -->
+  <section id="ods">
+    <div class="container">
+      <div class="head">
+        <span class="tag dark reveal">Agenda 2030</span>
+        <h2 class="reveal r-1">Alinhamento aos Objetivos de Desenvolvimento Sustentável</h2>
+        <span class="underline reveal r-1"></span>
+        <p class="reveal r-2">O GeoSafe está diretamente alinhado à Agenda 2030 da ONU, contribuindo com três objetivos
+          centrais: cidades mais seguras, resposta efetiva às mudanças climáticas e proteção da saúde e bem-estar das
+          populações vulneráveis.</p>
+      </div>
+
+      <div class="ods-grid">
+
+        <!-- ODS 11: Cidades e Comunidades Sustentáveis -->
+        <div class="ods-card ods-11 reveal">
+          <div class="ods-icon">
+            <div class="ods-icon-content">
+              <div>
+                <div class="ods-num-label">OBJETIVO</div>
+                <div class="ods-num">11</div>
+              </div>
+              <svg viewBox="0 0 24 24" fill="#fff">
+                <path d="M3 21V9l5-3 5 3v12H3zm12 0V13h6v8h-6zM5 19h2v-2H5v2zm0-4h2v-2H5v2zm0-4h2V9H5v2zm4 8h2v-2H9v2zm0-4h2v-2H9v2zm0-4h2V9H9v2zm8 8h2v-2h-2v2zm0-4h2v-2h-2v2z" />
+              </svg>
+            </div>
+          </div>
+          <h3>Cidades e Comunidades Sustentáveis</h3>
+          <p>Tornando as cidades mais inclusivas, seguras, resilientes e sustentáveis por meio de sistemas de
+            monitoramento e prevenção de desastres urbanos.</p>
+        </div>
+
+        <!-- ODS 13: Ação Climática -->
+        <div class="ods-card ods-13 reveal r-1">
+          <div class="ods-icon">
+            <div class="ods-icon-content">
+              <div>
+                <div class="ods-num-label">OBJETIVO</div>
+                <div class="ods-num">13</div>
+              </div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
+                <circle cx="12" cy="12" r="9" />
+                <circle cx="12" cy="12" r="3" fill="#fff" />
+                <path d="M3 12h18M12 3v18M5 6c2 2 4 3 7 3s5-1 7-3M5 18c2-2 4-3 7-3s5 1 7 3" stroke-width="1" />
+              </svg>
+            </div>
+          </div>
+          <h3>Ação Contra a Mudança Global do Clima</h3>
+          <p>Adotando medidas urgentes para combater os impactos das mudanças climáticas, incluindo a prevenção de
+            eventos extremos associados às chuvas intensas.</p>
+        </div>
+
+        <!-- ODS 3: Saúde e Bem-Estar -->
+        <div class="ods-card ods-3 reveal r-2">
+          <div class="ods-icon">
+            <div class="ods-icon-content">
+              <div>
+                <div class="ods-num-label">OBJETIVO</div>
+                <div class="ods-num">3</div>
+              </div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12h4l3-9 4 18 3-9h4" />
+              </svg>
+            </div>
+          </div>
+          <h3>Saúde e Bem-Estar</h3>
+          <p>Assegurando uma vida saudável e promovendo o bem-estar para todos, ao reduzir mortes e ferimentos causados
+            por desastres naturais evitáveis.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       SEÇÃO CTA (#cta)
+       Botão "Acessar" abre o modal de login (openLoginModal).
+       Botão "Saiba Mais" rola para #problema.
+  ============================================================ -->
+  <section id="cta">
+    <div class="container">
+      <h2 class="reveal">Prevenir é possível — e começa<br />com informação <em>em tempo real</em></h2>
+      <p class="reveal r-1">Acesse o protótipo do GeoSafe e conheça como a tecnologia pode ser aplicada para salvar
+        vidas por meio do monitoramento inteligente de riscos de deslizamento em comunidades vulneráveis.</p>
+      <div class="cta-btns reveal r-2">
+        <a href="javascript:void(0)" onclick="openLoginModal()" class="btn btn-green">Acessar</a>
+        <a href="#problema" class="btn btn-light">Saiba Mais</a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       MODAL DE LOGIN
+       Overlay ativado por openLoginModal().
+       Credenciais demo: demo@geosafe.com / geosafe2026
+       Para alterar: edite DEMO_CREDENTIALS no bloco <script> abaixo.
+  ============================================================ -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-login">
+      <span class="modal-close" id="closeModal">&times;</span>
+      <h3>Acessar GeoSafe</h3>
+      <div class="modal-sub">Faça login para acessar o sistema de monitoramento</div>
+
+      <div class="error-message" id="errorMessage">
+        ⚠️ E-mail ou senha inválidos
+      </div>
+
+      <!-- Formulário de login — action padrão bloqueado por preventDefault no JS -->
+      <form id="loginForm">
+        <div class="input-group">
+          <label>E-MAIL</label>
+          <input type="email" id="email" placeholder="seu@email.com" required>
+        </div>
+        <div class="input-group">
+          <label>SENHA</label>
+          <input type="password" id="password" placeholder="••••••" required>
+        </div>
+        <button type="submit" class="btn-login">Entrar no Sistema</button>
+      </form>
+
+      <div class="modal-footer">
+        <a href="#" id="forgotPassword">Esqueceu a senha?</a> •
+        <a href="#" id="createAccount">Criar conta demo</a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       FOOTER
+       Quatro colunas: marca, links do projeto, instituição, contato.
+       Para alterar dados de contato, edite a coluna "Contato" abaixo.
+  ============================================================ -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4>GeoSafe</h4>
+          <p>Sistema de Monitoramento Inteligente de Riscos de Deslizamento de Terra</p>
+        </div>
+        <div class="footer-col">
+          <h5>Projeto</h5>
+          <ul>
+            <li><a href="#hero">Início</a></li>
+            <li><a href="#problema">Sobre o GeoSafe</a></li>
+            <li><a href="#solucao">Funcionalidades</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Instituição</h5>
+          <p>[ E.E.E.P.Professor Sebastião Vasconcelos Sobrinho ]</p>
+          <p>[ 2° Desenvolvimento de Sistemas ]</p>
+        </div>
+        <div class="footer-col">
+          <h5>Contato</h5>
+          <p>[ geosafe.2026@gmail.com ]</p>
+          <p>[ (xx) xxxx-xxxx ]</p>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 GeoSafe — Todos os direitos reservados.</div>
+    </div>
+  </footer>
+
+
+  <!-- ============================================================
+       JAVASCRIPT
+       Três blocos independentes organizados por responsabilidade:
+       1. Modal de login
+       2. Cards de funcionalidade clicáveis
+       3. Navbar (hamburger, scroll ativo, reveal por IntersectionObserver)
+  ============================================================ -->
+
+  <!-- 1. Modal de Login -->
+  <script>
+    (function () {
+      const modal    = document.getElementById('loginModal');
+      const closeBtn = document.getElementById('closeModal');
+      const loginForm = document.getElementById('loginForm');
+      const errorMsg  = document.getElementById('errorMessage');
+
+      /* Credenciais de demonstração — altere aqui para produção */
+      const DEMO_CREDENTIALS = {
+        email:    'demo@geosafe.com',
+        password: 'geosafe2026'
+      };
+
+      /* Abre o modal — chamado pelo botão "Acessar" no CTA */
+      window.openLoginModal = function () {
+        if (!modal) return;
+        modal.classList.add('active');
+        loginForm.reset();
+        errorMsg.classList.remove('show');
+        document.body.style.overflow = 'hidden';
+      };
+
+      /* Fecha o modal e restaura scroll */
+      function closeLoginModal() {
+        if (!modal) return;
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        errorMsg.classList.remove('show');
+      }
+
+      /* Fechar pelo botão X */
+      if (closeBtn) closeBtn.addEventListener('click', closeLoginModal);
+
+      /* Fechar clicando fora do painel */
+      if (modal) {
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) closeLoginModal();
+        });
+      }
+
+      /* Fechar com tecla ESC */
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
+          closeLoginModal();
+        }
+      });
+
+      /* Submissão do formulário */
+      if (loginForm) {
+        loginForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+
+          const email    = document.getElementById('email').value.trim();
+          const password = document.getElementById('password').value;
+
+          if (!email || !password) {
+            errorMsg.textContent = '⚠️ Preencha todos os campos';
+            errorMsg.classList.add('show');
+            return;
+          }
+
+          if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
+            /* Login bem-sucedido */
+            errorMsg.classList.remove('show');
+
+            const successMsg = document.createElement('div');
+            successMsg.textContent = '✅ Login realizado com sucesso! Redirecionando...';
+            successMsg.style.cssText = `
+              background: var(--green);
+              color: white;
+              padding: 0.6rem;
+              border-radius: 6px;
+              text-align: center;
+              margin-bottom: 1rem;
+              font-size: 0.8rem;
+            `;
+            loginForm.insertBefore(successMsg, loginForm.firstChild);
+
+            setTimeout(() => {
+              closeLoginModal();
+              alert('Bem-vindo ao GeoSafe! Sistema de monitoramento carregado.');
+              /* Para redirecionar após login, descomente a linha abaixo: */
+              /* window.location.href = '/dashboard.html'; */
+            }, 1000);
+
+          } else {
+            /* Login falhou */
+            errorMsg.textContent = '⚠️ E-mail ou senha incorretos. Use: demo@geosafe.com / geosafe2026';
+            errorMsg.classList.add('show');
+            document.getElementById('password').value = '';
+            document.getElementById('password').focus();
+          }
+        });
+      }
+
+      /* Link "Esqueceu a senha?" */
+      const forgotBtn = document.getElementById('forgotPassword');
+      if (forgotBtn) {
+        forgotBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          alert('🔐 Para recuperar sua senha, entre em contato com o administrador do GeoSafe.\n\nE-mail: suporte@geosafe.com');
+        });
+      }
+
+      /* Link "Criar conta demo" — preenche campos automaticamente */
+      const createBtn = document.getElementById('createAccount');
+      if (createBtn) {
+        createBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          alert('🎯 Conta Demo:\n\n📧 E-mail: demo@geosafe.com\n🔑 Senha: geosafe2026\n\nUse estas credenciais para acessar o sistema.');
+          document.getElementById('email').value    = DEMO_CREDENTIALS.email;
+          document.getElementById('password').value = DEMO_CREDENTIALS.password;
+        });
+      }
+    })();
+  </script>
+
+  <!-- 2. Cards de Funcionalidade — redirecionamento ao clicar -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.feature-card').forEach(function (card) {
+        card.addEventListener('click', function (e) {
+          /* Evita duplo disparo se o clique vier do .card-link */
+          if (e.target.closest('.card-link')) return;
+
+          const page = this.dataset.page;
+          if (!page) return;
+
+          /* Feedback visual antes do redirecionamento */
+          this.style.opacity = '0.7';
+
+          /* CORREÇÃO: removido localStorage.setItem sem uso correspondente */
+          setTimeout(function () {
+            window.location.href = page;
+          }, 150);
+        });
+      });
+    });
+  </script>
+
+  <!-- 3. Navbar: hamburger, active por scroll e reveal por IntersectionObserver -->
+  <script>
+    /* Hamburger mobile */
+    const hamburger  = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    hamburger.addEventListener('click', function () {
+      hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open');
+      document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+    });
+
+    function closeMobile() {
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    /* Reveal de elementos ao entrar na viewport */
+    const revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(function (el) {
+      revealObserver.observe(el);
+    });
+
+    /* Marca link da navbar como .active conforme seção visível */
+    const sections = document.querySelectorAll('section[id]');
+    const navItems = document.querySelectorAll('.nav-links a');
+
+    window.addEventListener('scroll', function () {
+      let current = '';
+      sections.forEach(function (s) {
+        if (window.scrollY >= s.offsetTop - 120) current = s.id;
+      });
+      navItems.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+      });
+    }, { passive: true });
+  </script>
+
+</body>
+</html>
