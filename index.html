@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -345,22 +346,28 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 3rem;
-      align-items: center;
+      align-items: start;
       padding-bottom: 3rem;
+    }
+
+    .problema-text {
+      align-self: start;
     }
 
     .problema-img {
       width: 100%;
-      height: 100%;
-      min-height: 300px;
+      height: auto;
+      min-height: 0;
       background: #E8F2EF;
       border-radius: 12px;
       overflow: hidden;
+      align-self: start;
+      margin-top: 4rem;
     }
 
     .problema-img img {
       width: 100%;
-      height: 100%;
+      height: auto;
       object-fit: cover;
       display: block;
     }
@@ -420,11 +427,20 @@
       margin-bottom: 3.5rem;
     }
 
-    .solucao-head h2 {
-      font-size: clamp(1.7rem, 2.7vw, 2.05rem);
-      font-weight: 700;
-      letter-spacing: -.015em;
-      line-height: 1.25;
+    .solucao-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+      margin-bottom: 3.5rem;
+    }
+
+    .solucao-head>div:first-child {
+      grid-column: 1 / 2;
+    }
+
+    .solucao-text {
+      grid-column: 1 / 2;
     }
 
     .solucao-head .underline {
@@ -447,7 +463,7 @@
       font-style: italic;
       font-weight: bold;
       line-height: 1.7;
-      margin-top: 4.5rem;
+      margin-top: 7rem;
     }
 
     .cards-grid {
@@ -1470,4 +1486,5 @@
     }, { passive: true });
   </script>
 </body>
+
 </html>
