@@ -11,6 +11,7 @@
     rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    /* Seção: Reset e Variáveis Globais */
     *,
     *::before,
     *::after {
@@ -59,6 +60,7 @@
       padding: 0 2rem;
     }
 
+    /* Seção: Navbar */
     nav {
       position: sticky;
       top: 0;
@@ -182,6 +184,7 @@
       font-weight: 600;
     }
 
+    /* Seção: Componentes Globais */
     .tag {
       display: inline-block;
       font-size: .65rem;
@@ -276,6 +279,7 @@
       transition-delay: .32s;
     }
 
+    /* Seção: Hero */
     #hero {
       background: var(--bg-white);
       padding: 4.5rem 0 5rem;
@@ -330,6 +334,7 @@
       display: block;
     }
 
+    /* Seção: Problema */
     #problema {
       background: var(--bg-white);
       padding: 5rem 0 0;
@@ -400,6 +405,7 @@
       line-height: 1.45;
     }
 
+    /* Seção: Solução */
     #solucao {
       background: #F4F2EE;
       padding: 5rem 0 5.5rem;
@@ -510,6 +516,7 @@
       opacity: 1;
     }
 
+    /* Seção: ODS */
     #ods {
       background: var(--bg-gray);
       padding: 5rem 0;
@@ -631,6 +638,7 @@
       opacity: .82;
     }
 
+    /* Seção: CTA */
     #cta {
       background: #E8F2EF;
       padding: 5rem 0;
@@ -666,6 +674,7 @@
       flex-wrap: wrap;
     }
 
+    /* Seção: Modal Login */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -824,6 +833,7 @@
       text-decoration: underline;
     }
 
+    /* Seção: Footer */
     footer {
       background: var(--bg-darker);
       color: #aaa;
@@ -886,6 +896,7 @@
       color: #666;
     }
 
+    /* Seção: Responsivo */
     @media (max-width: 900px) {
       .nav-links {
         display: none;
@@ -962,12 +973,12 @@
 
 <body>
 
+  <!-- Seção: Navbar -->
   <nav>
     <div class="container nav-wrap">
       <a href="#" class="nav-brand">
         <span class="logo-mark"><img src="img/geosafe.png" alt="GeoSafe"
             style="width:100%; height:100%; object-fit:contain; display:block; background:transparent"></span>
-
       </a>
       <ul class="nav-links">
         <li><a href="#hero" class="active">Início</a></li>
@@ -985,6 +996,7 @@
     <a href="#cta" onclick="closeMobile()">Contato</a>
   </div>
 
+  <!-- Seção: Hero -->
   <section id="hero">
     <div class="container">
       <div class="hero-grid">
@@ -1086,6 +1098,7 @@
     </div>
   </section>
 
+  <!-- Seção: Problema -->
   <section id="problema">
     <div class="container">
       <div class="problema-grid">
@@ -1127,6 +1140,7 @@
     </div>
   </section>
 
+  <!-- Seção: Solução -->
   <section id="solucao">
     <div class="container">
       <div class="solucao-head">
@@ -1235,6 +1249,7 @@
     </div>
   </section>
 
+  <!-- Seção: ODS -->
   <section id="ods">
     <div class="container">
       <div class="head">
@@ -1299,6 +1314,7 @@
     </div>
   </section>
 
+  <!-- Seção: CTA -->
   <section id="cta">
     <div class="container">
       <h2 class="reveal">Prevenir é possível — e começa<br />com informação <em>em tempo real</em></h2>
@@ -1311,6 +1327,7 @@
     </div>
   </section>
 
+  <!-- Seção: Modal Login -->
   <div class="modal-overlay" id="loginModal">
     <div class="modal-login">
       <span class="modal-close" id="closeModal">&times;</span>
@@ -1329,6 +1346,7 @@
     </div>
   </div>
 
+  <!-- Seção: Footer -->
   <footer>
     <div class="container">
       <div class="footer-grid">
@@ -1359,7 +1377,9 @@
     </div>
   </footer>
 
+  <!-- Seção: Scripts -->
   <script>
+    // Seção: Modal Login
     (function () {
       const modal = document.getElementById('loginModal');
       const closeBtn = document.getElementById('closeModal');
@@ -1403,6 +1423,7 @@
       });
     })();
 
+    // Seção: Cards Funcionalidades
     document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.feature-card').forEach(function (card) {
         card.addEventListener('click', function (e) {
@@ -1415,6 +1436,7 @@
       });
     });
 
+    // Seção: Navbar e Reveal
     const hamburger = document.getElementById('hamburger');
     const mobileMenu = document.getElementById('mobileMenu');
     if (hamburger) {
@@ -1447,5 +1469,4 @@
     }, { passive: true });
   </script>
 </body>
-
 </html>
